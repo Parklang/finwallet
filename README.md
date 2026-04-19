@@ -74,36 +74,4 @@ FinWallet Tech Ecosystem
 
 ---
 
-## 🚀 Lộ trình Phát triển (Roadmap & Missing Features)
 
-Hiện tại, dự án đã hoàn thiện khung sườn (Foundation) và các tính năng quản lý cốt lõi. Các phần tiếp theo đang được ưu tiên phát triển bao gồm:
-
-### 1. Cổng thanh toán (Payment Integrations) `[High Priority]`
-- Tích hợp chuẩn **VietQR** để quét mã chuyển tiền nhanh.
-- Kết nối SDK **PayOS** hoặc **Stripe** để xử lý các giao dịch nạp/rút thực tế.
-
-### 2. Bảo mật & Xác thực nâng cao `[WIP]`
-- Bổ sung **Xác thực 2 lớp (2FA)** qua Email/SMS.
-- Chức năng **Social Login** (Đăng nhập bằng Google, Github).
-
-### 3. Hiệu năng & Khả năng mở rộng `[Roadmap]`
-- Triển khai **Redis** để lưu trữ cache và hàng đợi (Queue - BullMQ) giúp tối ưu hóa việc gửi thông báo/email.
-- Hỗ trợ đa ngôn ngữ (**i18n**) và đa tiền tệ.
-
-### 4. Tính năng AI nâng cao `[WIP]`
-- Cải thiện độ chính xác của **OCR quét hóa đơn**.
-- AI phân tích và dự báo chi tiêu dựa trên lịch sử giao dịch dài hạn.
-
----
-
-## 🛠 Hướng dẫn Cài đặt & Chạy local
-
-1. **Cài đặt Dependency**: `pnpm install`
-2. **Cấu hình**: Tạo file `.env` mẫu tại `apps/api` và `.env.local` tại `apps/web`.
-3. **Database**: `cd apps/api && npx prisma migrate dev`
-4. **Run Dev**: 
-   - Root: `pnpm dev`
-   - Mobile Test (bind IP): `pnpm dev:mobile`
-
----
-*Dự án đang trong quá trình hoàn thiện, mọi đóng góp hoặc phát hiện lỗi xin vui lòng tạo Issue trên GitHub.*
