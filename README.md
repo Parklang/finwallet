@@ -65,11 +65,6 @@ Chạy lệnh sau để kết nối điện thoại cùng mạng Wi-Fi:
 pnpm dev:mobile
 ```
 
----
 
-## 📄 Giấy phép (License)
-Dự án được bảo hộ dưới giấy phép MIT.
-
----
 
 ⭐ **Ủng hộ dự án bằng cách nhấn Star trên GitHub!**
