@@ -1,0 +1,386 @@
+// ============================================================
+// FinWallet — Prisma Schema (PostgreSQL)
+// Section 4: Database
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum WalletType {
+  CASH
+  BANK_ACCOUNT
+  CREDIT_CARD
+  E_WALLET
+  SAVINGS
+  INVESTMENT
+  OTHER
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum BudgetPeriod {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+enum RecurringFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum NotificationType {
+  TRANSACTION_CREATED
+  BUDGET_EXCEEDED
+  BUDGET_WARNING
+  GOAL_ACHIEVED
+  GOAL_PROGRESS
+  RECURRING_DUE
+  SECURITY_ALERT
+  SYSTEM
+}
+
+enum SplitStatus {
+  PENDING
+  SETTLED
+  CANCELLED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  TRANSFER
+}
+
+// ============================================================
+// USER & AUTHENTICATION
+// ============================================================
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  firstName     String
+  lastName      String
+  avatar        String?
+  phone         String?
+  currency      String   @default("VND")
+  language      String   @default("vi")
+  timezone      String   @default("Asia/Ho_Chi_Minh")
+  isVerified    Boolean  @default(false)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  refreshToken  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  wallets           Wallet[]
+  categories        Category[]
+  transactions      Transaction[]
+  budgets           Budget[]
+  goals             SavingGoal[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  billSplitSessions BillSplitSession[]
+  billParticipants  BillParticipant[]
+  recurringPayments RecurringPayment[]
+  chatMessages      ChatMessage[]
+
+  @@map("users")
+}
+
+// ============================================================
+// WALLETS
+// ============================================================
+
+model Wallet {
+  id          String     @id @default(cuid())
+  userId      String
+  name        String
+  type        WalletType @default(CASH)
+  balance     Decimal    @default(0) @db.Decimal(15, 2)
+  currency    String     @default("VND")
+  color       String     @default("#6366f1")
+  icon        String     @default("wallet")
+  isDefault   Boolean    @default(false)
+  isArchived  Boolean    @default(false)
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactionsFrom    Transaction[] @relation("FromWallet")
+  transactionsTo      Transaction[] @relation("ToWallet")
+
+  @@map("wallets")
+}
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+
+model Category {
+  id          String       @id @default(cuid())
+  userId      String?      // null = system default category
+  name        String
+  type        CategoryType
+  icon        String       @default("circle")
+  color       String       @default("#6366f1")
+  isDefault   Boolean      @default(false)
+  parentId    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user         User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent       Category?    @relation("CategoryParent", fields: [parentId], references: [id])
+  children     Category[]   @relation("CategoryParent")
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@map("categories")
+}
+
+// ============================================================
+// TRANSACTIONS (Core Ledger — Double-Entry)
+// ============================================================
+
+model Transaction {
+  id              String          @id @default(cuid())
+  userId          String
+  fromWalletId    String?
+  toWalletId      String?
+  categoryId      String?
+  type            TransactionType
+  amount          Decimal         @db.Decimal(15, 2)
+  currency        String          @default("VND")
+  description     String?
+  note            String?
+  receiptImageUrl String?
+  date            DateTime        @default(now())
+  isRecurring     Boolean         @default(false)
+  recurringId     String?
+  billSplitId     String?
+  tags            String[]
+  location        String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromWallet  Wallet?             @relation("FromWallet", fields: [fromWalletId], references: [id])
+  toWallet    Wallet?             @relation("ToWallet", fields: [toWalletId], references: [id])
+  category    Category?           @relation(fields: [categoryId], references: [id])
+  recurring   RecurringPayment?   @relation(fields: [recurringId], references: [id])
+  billSplit   BillSplitSession?   @relation(fields: [billSplitId], references: [id])
+
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([userId, categoryId])
+  @@map("transactions")
+}
+
+// ============================================================
+// BUDGETS
+// ============================================================
+
+model Budget {
+  id          String       @id @default(cuid())
+  userId      String
+  categoryId  String?
+  name        String
+  amount      Decimal      @db.Decimal(15, 2)
+  spent       Decimal      @default(0) @db.Decimal(15, 2)
+  period      BudgetPeriod @default(MONTHLY)
+  startDate   DateTime
+  endDate     DateTime
+  alertAt     Int          @default(80) // % to trigger warning alert
+  color       String       @default("#f59e0b")
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@map("budgets")
+}
+
+// ============================================================
+// SAVING GOALS (Hũ tài chính)
+// ============================================================
+
+model SavingGoal {
+  id            String     @id @default(cuid())
+  userId        String
+  name          String
+  targetAmount  Decimal    @db.Decimal(15, 2)
+  currentAmount Decimal    @default(0) @db.Decimal(15, 2)
+  currency      String     @default("VND")
+  deadline      DateTime?
+  icon          String     @default("target")
+  color         String     @default("#10b981")
+  status        GoalStatus @default(ACTIVE)
+  description   String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("saving_goals")
+}
+
+// ============================================================
+// BILL SPLITTER (Chia tiền nhóm)
+// ============================================================
+
+model BillSplitSession {
+  id          String      @id @default(cuid())
+  userId      String      // Creator
+  title       String
+  totalAmount Decimal     @db.Decimal(15, 2)
+  currency    String      @default("VND")
+  date        DateTime    @default(now())
+  note        String?
+  status      SplitStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  creator      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participants BillParticipant[]
+  transactions Transaction[]
+
+  @@map("bill_split_sessions")
+}
+
+model BillParticipant {
+  id        String      @id @default(cuid())
+  sessionId String
+  userId    String?     // null if external participant (by name)
+  name      String
+  email     String?
+  amount    Decimal     @db.Decimal(15, 2)
+  isPaid    Boolean     @default(false)
+  paidAt    DateTime?
+  createdAt DateTime    @default(now())
+
+  session BillSplitSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User?            @relation(fields: [userId], references: [id])
+
+  @@map("bill_participants")
+}
+
+// ============================================================
+// RECURRING PAYMENTS (Giao dịch định kỳ)
+// ============================================================
+
+model RecurringPayment {
+  id          String             @id @default(cuid())
+  userId      String
+  name        String
+  amount      Decimal            @db.Decimal(15, 2)
+  frequency   RecurringFrequency
+  nextDueDate DateTime
+  isActive    Boolean            @default(true)
+  description String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("recurring_payments")
+}
+
+// ============================================================
+// NOTIFICATIONS (Section 11)
+// ============================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ============================================================
+// AUDIT LOGS (Section 5 — Security)
+// ============================================================
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String
+  action     AuditAction
+  entity     String
+  entityId   String?
+  oldData    Json?
+  newData    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================================
+// AI CHAT MESSAGES (Section 12)
+// ============================================================
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String   // "user" | "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("chat_messages")
+}

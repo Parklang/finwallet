@@ -1,0 +1,71 @@
+# ============================================================
+# FinWallet — CI/CD Pipeline
+# Section 7: DevOps — GitHub Actions
+# ============================================================
+name: FinWallet CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Section 13 — Testing
+  test-backend:
+    name: 🧪 Backend Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: finwallet_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install
+      - name: Run Jest unit tests
+        run: pnpm --filter api test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/finwallet_test
+          JWT_SECRET: test-secret-key-32-chars-minimum
+          JWT_REFRESH_SECRET: test-refresh-secret-32-chars
+
+  test-frontend:
+    name: 🧪 Frontend Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install
+      - run: pnpm --filter web build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+
+  # Deploy to production (only on main push)
+  deploy:
+    name: 🚀 Deploy
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 📦 Build Docker images
+        run: docker-compose build
+      - name: Deploy
+        run: echo "Add your deployment script here (AWS ECS, Railway, etc.)"
