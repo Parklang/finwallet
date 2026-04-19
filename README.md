@@ -1,152 +1,109 @@
-# 💰 FinWallet — Quản lý Tài chính Thông minh với AI
+# 💰 FinWallet (npj) — Smart Personal Finance Tracker
 
-[![Next.js](https://img.shields.io/badge/Next.js-15+-black?logo=next.js)](https://nextjs.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-11+-red?logo=nestjs)](https://nestjs.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-blue?logo=prisma)](https://www.prisma.io/)
-[![Gemini AI](https://img.shields.io/badge/AI-Google_Gemini-blue?logo=google-gemini)](https://ai.google.dev/)
-
-**FinWallet** là nền tảng quản lý tài chính cá nhân hiện đại, kết hợp sức mạnh của trí tuệ nhân tạo (AI) để tối ưu hóa sức khỏe tài chính cho người dùng.
+> **Dự án đang trong quá trình phát triển (Development / Alpha Version)**. Mục tiêu là xây dựng một hệ thống quản lý tài chính cá nhân toàn diện, tích hợp AI để tối ưu hóa trải nghiệm người dùng.
 
 ---
 
-## 🛠 Bản đồ công nghệ (Technical Ecosystem)
+## 🛠 Bản đồ Công nghệ (14-Point Tech Stack)
 
-Dưới đây là cấu trúc 14 lớp công nghệ chính cấu thành nên hệ sinh thái của FinWallet:
+Dưới đây là chi tiết các lớp công nghệ đang được sử dụng và lộ trình phát triển của từng phần.
 
 | Lớp (Layer) | Công nghệ & Chi tiết | Trạng thái |
 | :--- | :--- | :---: |
-| **1. Frontend** | Next.js 15+ (App Router), React 19, Tailwind CSS, Framer Motion | ✅ |
-| **2. Backend** | NestJS 11 (Node.js framework), RxJS | ✅ |
-| **3. Architecture** | Monorepo (Turborepo), Modular Architecture, Pnpm Workspaces | ✅ |
-| **4. Database** | PostgreSQL, Prisma ORM (Type-safe querying) | ✅ |
-| **5. Auth & Security** | JWT (Stateless), Bcrypt, Throttler (Rate Limit), Audit Logging System | ✅ |
-| **6. Infrastructure** | Turborepo pipeline, Monorepo build system | ✅ |
-| **7. DevOps** | Docker Compose, Swagger (API Docs), Health Checks, GitHub Actions | ✅ |
-| **8. Integrations** | Google Gemini AI, Cloudinary (Media), Nodemailer, PayOS/VietQR (Planned) | ✅ |
-| **9. Core Modules** | Wallet, Transaction, Category, Budget, Goal, Bill Split, Recurring | ✅ |
-| **10. Analytics** | Analytics Service, Recharts (Visual Data Presentation) | ✅ |
-| **11. Notifications** | Real-time WebSocket (Socket.io) | ✅ |
-| **12. AI Features** | AI Financial Advisor, OCR Receipt Scanning, Smart QR Parsing | ✅ |
-| **13. Testing** | Jest (Unit/Integration Testing), Type-safe checking | ✅ |
-| **14. Scalability** | Turborepo Remote Caching, Optimized DB queries | ✅ |
+| **1. Frontend** | Next.js 15 (App Router), React 19, Tailwind CSS, Zustand | `[DONE]` |
+| **2. Backend** | NestJS 11 (Node.js framework), REST APIs | `[DONE]` |
+| **3. Architecture** | Monorepo (Turborepo), Modular Architecture, Pnpm Workspaces | `[DONE]` |
+| **4. Database** | PostgreSQL Core, Prisma ORM | `[DONE]` |
+| **5. Auth & Security** | JWT Authentication, Bcrypt password hashing, Audit Logs | `[WIP]` |
+| **6. Infrastructure** | Turborepo Pipeline, Local Deployment | `[DONE]` |
+| **7. DevOps** | Docker Compose, Swagger (API Docs), GitHub Actions | `[DONE]` |
+| **8. Integrations** | Gemini AI, Cloudinary Service, Nodemailer | `[WIP]` |
+| **9. Core Modules** | Wallet, Transaction, Category, Budget, Goal, Bill Split | `[DONE]` |
+| **10. Analytics** | Recharts Visualization, Revenue/Expense Logic | `[DONE]` |
+| **11. Notifications** | Real-time WebSocket (Socket.io) | `[DONE]` |
+| **12. AI Features** | Gemini Advisor, OCR Receipt Parsing, QR Support | `[WIP]` |
+| **13. Testing** | Jest Unit/Integration Testing (Partial) | `[WIP]` |
+| **14. Performance** | Turborepo Local/Remote Caching | `[DONE]` |
 
 ---
 
-### 🗺️ Sơ đồ Hệ sinh thái Kỹ thuật (Tech Ecosystem Tree)
+## 🗺️ Hệ sinh thái Dự án (Technical Tree)
 
 ```text
 FinWallet Tech Ecosystem
 ┃
-┣ 📂 Frontend
-┃ ┣ 📂 Next.js 15 (SSR & Performance)
-┃ ┣ 📂 React 19 (Component-based UI)
-┃ ┣ 📂 TailwindCSS (Modern Styling)
-┃ ┣ 📂 TypeScript (Type Safety)
+┣ 📂 Frontend(Web)
+┃ ┣ 📂 Next.js 15 & React 19
+┃ ┣ 📂 TailwindCSS (UI Styling)
 ┃ ┣ 📂 Zustand (State Management)
 ┃ ┗ 📂 Framer Motion (Animations)
 ┃
-┣ 📂 Backend
-┃ ┣ 📂 NestJS 11 (Modular Framework)
-┃ ┣ 📂 REST APIs (Business Logic)
-┃ ┣ 📂 WebSocket (Socket.io - Real-time)
-┃ ┗ 📂 Swagger (Interactive Docs)
+┣ 📂 Backend(API)
+┃ ┣ 📂 NestJS (Modular Architecture)
+┃ ┣ 📂 Socket.io (Real-time syncing)
+┃ ┗ 📂 Swagger (Doc generation)
 ┃
-┣ 📂 Architecture
-┃ ┣ 📂 Monorepo (Turborepo)
-┃ ┣ 📂 Modular Architecture
-┃ ┗ 📂 Clean Architecture
-┃
-┣ 📂 Database
-┃ ┣ 📂 PostgreSQL (Relational Data)
+┣ 📂 Data Layer
+┃ ┣ 📂 PostgreSQL (Primary DB)
 ┃ ┣ 📂 Prisma (Type-safe ORM)
-┃ ┗ 📂 Redis (Caching & Sessions - Planned)
+┃ ┗ 📂 Redis (Caching / Queue - [Roadmap])
 ┃
-┣ 📂 Authentication & Security
-┃ ┣ 📂 JWT (Stateless Auth)
-┃ ┣ 📂 Role-Based Access Control (RBAC)
-┃ ┣ 📂 Audit Logs & Tracking
-┃ ┣ 📂 Throttler (Rate Limiting)
-┃ ┗ 📂 Encryption (Bcrypt)
-┃
-┣ 📂 Infrastructure
-┃ ┣ 📂 Docker Compose
-┃ ┗ 📂 Monorepo Infrastructure (pnpm)
-┃
-┣ 📂 DevOps
-┃ ┣ 📂 CI/CD (GitHub Actions)
-┃ ┣ 📂 Health Checks (DevOps)
-┃ ┗ 📂 API Documentation
+┣ 📂 Security
+┃ ┣ 📂 JWT Stateless Auth
+┃ ┣ 📂 Audit Log System
+┃ ┣ 📂 Rate Limiting (Throttler)
+┃ ┗ 📂 OAuth 2.0 (Google/FB - [Roadmap])
 ┃
 ┣ 📂 Integrations
-┃ ┣ 📂 Google Gemini AI (Advisor)
-┃ ┣ 📂 Cloudinary (Storage)
-┃ ┣ 📂 Nodemailer (Email)
-┃ ┗ 📂 PayOS / VietQR (Planned)
+┃ ┣ 📂 Gemini AI (Advisory & OCR)
+┃ ┣ 📂 Cloudinary (Media upload)
+┃ ┣ 📂 Nodemailer (Mail trigger)
+┃ ┗ 📂 Payment Gateway (PayOS/Stripe - [Roadmap])
 ┃
 ┣ 📂 Core Modules
-┃ ┣ 📂 Wallet & Transaction
+┃ ┣ 📂 Wallets & Transactions
 ┃ ┣ 📂 Budgeting & Savings Goals
-┃ ┣ 📂 Bill Splitting
-┃ ┗ 📂 Recurring Payments
+┃ ┣ 📂 Group Bill Splitting
+┃ ┗ 📂 Recurring Payments ([WIP])
 ┃
-┣ 📂 Analytics & Reporting
-┃ ┣ 📂 Financial Dashboard
-┃ ┣ 📂 Visual Data (Recharts)
-┃ ┗ 📂 AI Predictions (Planned)
-┃
-┣ 📂 Notifications
-┃ ┣ 📂 In-App (Socket.io)
-┃ ┗ 📂 Email & SMS (Planned)
-┃
-┣ 📂 AI Features
-┃ ┣ 📂 AI Financial Advisor
-┃ ┣ 📂 OCR Receipt Scanning
-┃ ┗ 📂 Smart QR Parsing
-┃
-┣ 📂 Testing
-┃ ┣ 📂 Unit Testing (Jest)
-┃ ┗ 📂 Type Compatibility
-┃
-┗ 📂 Scalability & Performance
-  ┣ 📂 Remote Caching (Turbo)
-  ┗ 📂 DB Indexing Strategies
+┗ 📂 DevOps & Performance
+  ┣ 📂 Docker Compose setup
+  ┣ 📂 GitHub Actions (CI)
+  ┗ 📂 Turbo Performance Caching
 ```
 
 ---
 
-## ✨ Tính năng nổi bật
+## 🚀 Lộ trình Phát triển (Roadmap & Missing Features)
 
-- **Robot tư vấn AI**: Tư vấn tài chính cá nhân hóa bằng Google Gemini.
-- **Quản lý đa ví**: Theo dõi số dư từ nhiều nguồn tài khoản khác nhau.
-- **Thông báo tức thì**: Cập nhật biến động số dư và nhắc nhở qua WebSocket.
-- **Quét hóa đơn thông minh**: Tự động trích xuất thông tin từ ảnh chụp hóa đơn bằng AI.
-- **Phân tích chi tiêu**: Biểu đồ trực quan giúp bạn nắm bắt dòng tiền nhanh chóng.
+Hiện tại, dự án đã hoàn thiện khung sườn (Foundation) và các tính năng quản lý cốt lõi. Các phần tiếp theo đang được ưu tiên phát triển bao gồm:
+
+### 1. Cổng thanh toán (Payment Integrations) `[High Priority]`
+- Tích hợp chuẩn **VietQR** để quét mã chuyển tiền nhanh.
+- Kết nối SDK **PayOS** hoặc **Stripe** để xử lý các giao dịch nạp/rút thực tế.
+
+### 2. Bảo mật & Xác thực nâng cao `[WIP]`
+- Bổ sung **Xác thực 2 lớp (2FA)** qua Email/SMS.
+- Chức năng **Social Login** (Đăng nhập bằng Google, Github).
+
+### 3. Hiệu năng & Khả năng mở rộng `[Roadmap]`
+- Triển khai **Redis** để lưu trữ cache và hàng đợi (Queue - BullMQ) giúp tối ưu hóa việc gửi thông báo/email.
+- Hỗ trợ đa ngôn ngữ (**i18n**) và đa tiền tệ.
+
+### 4. Tính năng AI nâng cao `[WIP]`
+- Cải thiện độ chính xác của **OCR quét hóa đơn**.
+- AI phân tích và dự báo chi tiêu dựa trên lịch sử giao dịch dài hạn.
 
 ---
 
-## 🚀 Hướng dẫn Cài đặt & Khởi chạy
+## 🛠 Hướng dẫn Cài đặt & Chạy local
 
-### 1. Cài đặt các gói phụ thuộc
-```bash
-pnpm install
-```
+1. **Cài đặt Dependency**: `pnpm install`
+2. **Cấu hình**: Tạo file `.env` mẫu tại `apps/api` và `.env.local` tại `apps/web`.
+3. **Database**: `cd apps/api && npx prisma migrate dev`
+4. **Run Dev**: 
+   - Root: `pnpm dev`
+   - Mobile Test (bind IP): `pnpm dev:mobile`
 
-### 2. Cấu hình biến môi trường
-Sao chép `.env.example` thành `.env` trong các thư mục `apps/api` và `apps/web`.
-
-### 3. Khởi chạy dự án
-```bash
-pnpm dev
-```
-- Frontend: `http://localhost:3000`
-- Backend/Swagger: `http://localhost:3001/api/docs`
-
-### 📱 Demo trên di động
-Chạy lệnh sau để kết nối điện thoại cùng mạng Wi-Fi:
-```bash
-pnpm dev:mobile
-```
-
-
-
-⭐ **Ủng hộ dự án bằng cách nhấn Star trên GitHub!**
+---
+*Dự án đang trong quá trình hoàn thiện, mọi đóng góp hoặc phát hiện lỗi xin vui lòng tạo Issue trên GitHub.*
