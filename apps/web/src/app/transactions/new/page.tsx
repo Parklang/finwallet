@@ -308,7 +308,12 @@ export default function NewTransactionPage() {
             <h2 style={{ marginBottom: 12 }}>Quét VietQR</h2>
             <p style={{ marginBottom: 24, fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>Di chuyển mã QR vào giữa khung hình</p>
             <div style={{ borderRadius: 16, overflow: 'hidden' }}>
-              <Scanner onScan={(result) => handleQrScanned(result[0].rawValue)} />
+              <Scanner onScan={(result) => {
+                const text = result?.[0]?.rawValue;
+                if (text) {
+                  handleQrScanned(text);
+                }
+              }} />
             </div>
           </div>
         </div>
