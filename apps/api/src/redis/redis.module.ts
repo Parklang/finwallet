@@ -22,7 +22,7 @@ import { REDIS_CLIENT } from './redis.constants';
         const redis = new Redis({ host, port, password, lazyConnect: true });
 
         redis.on('connect', () => console.log(`[Redis] Connected to ${host}:${port}`));
-        redis.on('error', (err: Error) => console.warn('[Redis] Error:', err.message));
+        redis.on('error', () => { /* ignore reconnect spam */ });
 
         try {
           await redis.connect();
