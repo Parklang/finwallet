@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
@@ -7,7 +7,7 @@ import { Filter, Search, Plus } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import Link from 'next/link';
 
-export default function TransactionsPage() {
+function TransactionsContent() {
   const { user } = useAuthStore();
   const searchParams = useSearchParams();
   const walletId = searchParams.get('walletId');
@@ -36,7 +36,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     fetchTransactions();
-  }, [walletId, type]); // fetch on mount or when filters change
+  }, [walletId, type]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,18 +63,18 @@ export default function TransactionsPage() {
         <form onSubmit={handleSearchSubmit} className="flex gap-4">
           <div className="relative" style={{ flex: 1 }}>
             <Search size={18} style={{ position: 'absolute', left: 16, top: 14, color: 'var(--color-text-muted)' }} />
-            <input 
-              type="text" 
-              className="input" 
-              placeholder="Tìm kiếm giao dịch, ghi chú..." 
+            <input
+              type="text"
+              className="input"
+              placeholder="Tìm kiếm giao dịch, ghi chú..."
               style={{ paddingLeft: 44 }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
-          <select 
-            className="input" 
+
+          <select
+            className="input"
             style={{ width: 180, appearance: 'none' }}
             value={type}
             onChange={(e) => setType(e.target.value)}
@@ -95,7 +95,7 @@ export default function TransactionsPage() {
         <table>
           <thead>
             <tr>
-              <th>Chi tiết & Nguồn</th>
+              <th>Chi tiết &amp; Nguồn</th>
               <th>Danh mục</th>
               <th>Ngày</th>
               <th>Loại</th>
@@ -113,8 +113,8 @@ export default function TransactionsPage() {
                   <td>
                     <div style={{ fontWeight: 600 }}>{tx.description || 'Giao dịch không tên'}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                      {tx.type === 'TRANSFER' 
-                        ? `${tx.fromWallet?.name} → ${tx.toWallet?.name}` 
+                      {tx.type === 'TRANSFER'
+                        ? `${tx.fromWallet?.name} → ${tx.toWallet?.name}`
                         : (tx.fromWallet?.name || tx.toWallet?.name)}
                     </div>
                   </td>
@@ -125,13 +125,13 @@ export default function TransactionsPage() {
                       </div>
                     ) : '-'}
                   </td>
-                  <td>{new Date(tx.date).toLocaleDateString('vi-VN')} {new Date(tx.date).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</td>
+                  <td>{new Date(tx.date).toLocaleDateString('vi-VN')} {new Date(tx.date).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</td>
                   <td>
                     <span className={`badge badge-${tx.type.toLowerCase()}`}>
                       {tx.type === 'EXPENSE' ? 'Chi tiêu' : tx.type === 'INCOME' ? 'Thu nhập' : 'Chuyển khoản'}
                     </span>
                   </td>
-                  <td style={{ 
+                  <td style={{
                     textAlign: 'right', fontWeight: 700,
                     color: tx.type === 'EXPENSE' ? 'var(--color-rose)' : tx.type === 'INCOME' ? 'var(--color-emerald)' : 'var(--color-blue)'
                   }}>
@@ -144,5 +144,19 @@ export default function TransactionsPage() {
         </table>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-text-muted)' }}>
+          Đang tải...
+        </div>
+      </DashboardLayout>
+    }>
+      <TransactionsContent />
+    </Suspense>
   );
 }
