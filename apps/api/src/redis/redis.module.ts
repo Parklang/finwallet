@@ -38,4 +38,4 @@ import { REDIS_CLIENT } from './redis.constants';
   ],
   exports: [REDIS_CLIENT, CacheService],
 })
-export class RedisModule {}
+export class RedisModule { }
