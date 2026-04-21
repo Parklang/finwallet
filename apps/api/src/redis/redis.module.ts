@@ -6,8 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { CacheService } from './cache.service';
 
-// Provider token
-export const REDIS_CLIENT = 'REDIS_CLIENT';
+import { REDIS_CLIENT } from './redis.constants';
 
 @Global()
 @Module({
