@@ -168,6 +168,58 @@ export class AuthService {
     return { message: 'Đổi mật khẩu thành công' };
   }
 
+  // Đăng nhập / Đăng ký qua Google OAuth
+  async loginWithGoogle(googleUser: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+    googleId: string;
+  }) {
+    let user = await this.prisma.user.findUnique({
+      where: { email: googleUser.email },
+    });
+
+    if (!user) {
+      // Tự động tạo tài khoản mới khi lần đầu OAuth
+      const randomPassword = await this.hashPassword(
+        Math.random().toString(36).slice(-12) + 'Aa1!',
+      );
+      user = await this.prisma.user.create({
+        data: {
+          email: googleUser.email,
+          firstName: googleUser.firstName,
+          lastName: googleUser.lastName,
+          avatar: googleUser.avatar,
+          password: randomPassword,
+          isVerified: true, // OAuth users đã xác minh email
+        },
+      });
+      await this.createDefaultDataForUser(user.id);
+    } else if (!user.isVerified) {
+      // Cập nhật trạng thái verified nếu login lần đầu qua Google
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { isVerified: true, avatar: googleUser.avatar || user.avatar },
+      });
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: await bcrypt.hash(tokens.refreshToken, 10) },
+    });
+
+    await this.prisma.auditLog.create({
+      data: { userId: user.id, action: 'LOGIN', entity: 'USER', entityId: user.id },
+    });
+
+    return {
+      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+      ...tokens,
+    };
+  }
+
   private async createDefaultDataForUser(userId: string) {
     // Default wallet
     await this.prisma.wallet.create({

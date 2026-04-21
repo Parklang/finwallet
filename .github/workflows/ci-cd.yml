@@ -1,5 +1,5 @@
 # ============================================================
-# FinWallet — CI/CD Pipeline
+# FinWallet — CI/CD Pipeline (Nâng cấp với Prisma Deploy + CD)
 # Section 7: DevOps — GitHub Actions
 # ============================================================
 name: FinWallet CI/CD
@@ -10,8 +10,12 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  PNPM_VERSION: '9'
+  NODE_VERSION: '20'
+
 jobs:
-  # Section 13 — Testing
+  # ── Test Backend ──────────────────────────────────────────
   test-backend:
     name: 🧪 Backend Tests
     runs-on: ubuntu-latest
@@ -31,41 +35,134 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v3
-        with: { version: 9 }
+        with: { version: '${{ env.PNPM_VERSION }}' }
+
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'pnpm' }
-      - run: pnpm install
-      - name: Run Jest unit tests
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🗄️ Run Prisma Migrate (Test DB)
+        run: pnpm --filter api exec prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/finwallet_test
+
+      - name: 🧪 Run Jest unit tests
         run: pnpm --filter api test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/finwallet_test
-          JWT_SECRET: test-secret-key-32-chars-minimum
-          JWT_REFRESH_SECRET: test-refresh-secret-32-chars
+          JWT_SECRET: test-secret-key-min-32-chars-here
+          JWT_REFRESH_SECRET: test-refresh-key-min-32-chars-here
+          BCRYPT_ROUNDS: '8'
 
+  # ── Test & Build Frontend ─────────────────────────────────
   test-frontend:
-    name: 🧪 Frontend Tests & Build
+    name: 🧪 Frontend Build Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v3
-        with: { version: 9 }
+        with: { version: '${{ env.PNPM_VERSION }}' }
+
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'pnpm' }
-      - run: pnpm install
-      - run: pnpm --filter web build
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Type Check
+        run: pnpm --filter web run check-types
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:3001
 
-  # Deploy to production (only on main push)
-  deploy:
-    name: 🚀 Deploy
-    needs: [test-backend, test-frontend]
+      - name: 🏗️ Build Next.js
+        run: pnpm --filter web build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:3001
+
+  # ── Prisma Migrate Production ─────────────────────────────
+  migrate-production:
+    name: 🗄️ Prisma Migrate Deploy
     runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-      - name: 📦 Build Docker images
-        run: docker-compose build
-      - name: Deploy
-        run: echo "Add your deployment script here (AWS ECS, Railway, etc.)"
+
+      - uses: pnpm/action-setup@v3
+        with: { version: '${{ env.PNPM_VERSION }}' }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '${{ env.NODE_VERSION }}'
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🗄️ Run prisma migrate deploy (Production)
+        run: pnpm --filter api exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  # ── Deploy API → Railway ──────────────────────────────────
+  deploy-api:
+    name: 🚀 Deploy API → Railway
+    runs-on: ubuntu-latest
+    needs: [migrate-production]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🚂 Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: 🚀 Deploy to Railway
+        run: railway up --service finwallet-api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  # ── Deploy Web → Vercel ───────────────────────────────────
+  deploy-web:
+    name: 🚀 Deploy Web → Vercel
+    runs-on: ubuntu-latest
+    needs: [test-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ▲ Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: 🚀 Deploy to Vercel
+        run: vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        working-directory: apps/web
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # ── Summary ───────────────────────────────────────────────
+  notify:
+    name: 📋 Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-web]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: 📋 Write Summary
+        run: |
+          echo "## 🚀 FinWallet Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| API (Railway) | ${{ needs.deploy-api.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Web (Vercel) | ${{ needs.deploy-web.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| DB Migrate | ${{ needs.migrate-production.result }} |" >> $GITHUB_STEP_SUMMARY

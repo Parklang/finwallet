@@ -1,0 +1,140 @@
+# ============================================================
+# FinWallet — Docker Compose PRODUCTION
+# Section 7: DevOps — Production Infrastructure
+# ============================================================
+# Sử dụng: docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
+# ============================================================
+version: '3.9'
+
+services:
+  # ── PostgreSQL (Production) ────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: finwallet_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # KHÔNG expose port ra ngoài trong production
+    expose:
+      - '5432'
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - finwallet_net
+
+  # ── Redis (Production) ────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: finwallet_redis_prod
+    restart: always
+    expose:
+      - '6379'
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data_prod:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - finwallet_net
+
+  # ── NestJS API (Production) ───────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: finwallet_api_prod
+    restart: always
+    expose:
+      - '3001'
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_EXPIRES: ${JWT_ACCESS_EXPIRES:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_REFRESH_EXPIRES: ${JWT_REFRESH_EXPIRES:-7d}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      FRONTEND_URL: ${FRONTEND_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - finwallet_net
+    # Chạy prisma migrate trước khi start
+    command: >
+      sh -c "npx prisma migrate deploy && node dist/main"
+
+  # ── Next.js Web (Production) ──────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+    container_name: finwallet_web_prod
+    restart: always
+    expose:
+      - '3000'
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+    depends_on:
+      - api
+    networks:
+      - finwallet_net
+
+  # ── Nginx Reverse Proxy + SSL ──────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: finwallet_nginx_prod
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_certbot:/var/www/certbot:ro
+    depends_on:
+      - web
+      - api
+    networks:
+      - finwallet_net
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+  nginx_certbot:
+
+networks:
+  finwallet_net:
+    name: finwallet_network_prod

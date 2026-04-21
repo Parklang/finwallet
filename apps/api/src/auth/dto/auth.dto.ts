@@ -61,3 +61,16 @@ export class ChangePasswordDto {
   @MinLength(8)
   newPassword: string;
 }
+
+export class VerifyOtpDto {
+  @ApiProperty({ example: '123456', description: 'Mã OTP 6 chữ số' })
+  @IsString()
+  @MinLength(6)
+  @MaxLength(6)
+  otp: string;
+}
+
+export class Toggle2FADto {
+  @ApiProperty({ example: true, description: 'true = bật 2FA, false = tắt 2FA' })
+  enable: boolean;
+}
