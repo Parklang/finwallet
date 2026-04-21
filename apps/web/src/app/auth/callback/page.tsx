@@ -3,10 +3,11 @@
 // OAUTH CALLBACK PAGE — Xử lý redirect từ Google OAuth
 // Route: /auth/callback?accessToken=...&refreshToken=...
 // ============================================================
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function OAuthCallbackPage() {
+// Tách riêng component dùng useSearchParams để có thể bọc Suspense
+function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -50,5 +51,31 @@ export default function OAuthCallbackPage() {
       </p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
+  );
+}
+
+// Component cha bọc Suspense — bắt buộc để Next.js build thành công
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--color-bg-primary)',
+      }}>
+        <div style={{
+          width: 48, height: 48,
+          border: '4px solid var(--color-border)',
+          borderTopColor: 'var(--color-primary)',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    }>
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }
