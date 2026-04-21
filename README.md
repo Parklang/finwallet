@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Parklang/finwallet/main/apps/web/public/favicon.ico" alt="FinWallet Logo" width="80" height="80">
+  <img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/0091950f-20f7-419c-b5e6-77875483d397" /> alt="FinWallet Logo" width="80" height="80">
   
   # 💰 FinWallet — Smart Personal Finance Tracker
   
