@@ -19,12 +19,7 @@
 ## 🎯 Giới thiệu
 **FinWallet** là một ứng dụng quản lý thu chi cá nhân hiện đại, được xây dựng theo kiến trúc **Monorepo** với các công nghệ Web mới nhất. Dự án không chỉ giúp người dùng theo dõi dòng tiền (Double-entry ledger), lập ngân sách, mà còn tích hợp Trí tuệ Nhân tạo (Google Gemini) để cung cấp các phân tích tài chính tự động và chuyên sâu.
 
-> *Lưu ý: Bạn có thể thay thế các ảnh mockup dưới đây bằng ảnh chụp màn hình thực tế của ứng dụng để làm portfolio.*
 
-<div align="center">
-  <!-- Thay thế đường dẫn link ảnh thực tế của bạn vào đây -->
-  <img src="https://via.placeholder.com/800x450.png?text=Dashboard+Screenshot" alt="FinWallet Dashboard" width="800" />
-</div>
 
 ---
 
@@ -76,67 +71,7 @@ finwallet/
 
 ---
 
-## ⚙️ Hướng dẫn Cài đặt & Chạy Local
 
-Bạn cần cài đặt **[Node.js 18+](https://nodejs.org/en/)**, **[pnpm](https://pnpm.io/)** và một Database **PostgreSQL**.
-
-**1. Clone mã nguồn**
-```bash
-git clone https://github.com/Parklang/finwallet.git
-cd finwallet
-```
-
-**2. Cài đặt thư viện**
-```bash
-pnpm install
-```
-
-**3. Cấu hình Biến môi trường**
-Tạo file `.env` bên trong thư mục `apps/api/` (Tham khảo `apps/api/.env.example`) và điền các thông tin:
-```env
-DATABASE_URL="postgresql://postgres:password@localhost:5432/finwallet"
-JWT_SECRET="super_secret_key"
-JWT_REFRESH_SECRET="super_secret_refresh_key"
-GEMINI_API_KEY="your-gemini-key"
-```
-
-**4. Khởi tạo Database**
-```bash
-cd apps/api
-npx prisma db push
-```
-
-**5. Khởi động toàn bộ dự án**
-Quay lại thư mục gốc (`/finwallet`) và chạy lệnh của Turborepo:
-```bash
-pnpm run dev
-```
-- Frontend sẽ chạy ở: `http://localhost:3000`
-- Backend API sẽ chạy ở: `http://localhost:4000/api/v1`
-- Swagger API Docs: `http://localhost:4000/api/docs`
 
 ---
-
-## 🗄️ Database & Schema Design
-
-Hệ thống được thiết kế theo tư duy **Double-entry bookkeeping** đơn giản hóa cho cá nhân.
-
-- `User`: Quản lý thông tin xác thực, ngôn ngữ, quyền.
-- `Wallet`: Lưu số dư hiện tại của từng nguồn tiền.
-- `Transaction`: Giao dịch cốt lõi (Tham chiếu tới ví nguồn và ví đích nếu là chuyển khoản).
-- `Category`: Phân loại thu chi (Hỗ trợ cha/con).
-- `ChatMessage`: Lưu trữ ngữ cảnh cuộc trò chuyện giữa người dùng và AI.
-
-*(Bạn có thể chạy `npx prisma studio` để vào giao diện quản lý Database trực quan trên trình duyệt)*.
-
----
-
-## 🚀 Quy trình Triển khai (CI/CD Deployment)
-
-Dự án có thể chạy hoàn toàn độc lập trên môi trường Cloud:
-1. **Database:** Lưu trữ tại [Supabase](https://supabase.com/) (Session mode, port 5432).
-2. **API (Backend):** Triển khai trực tiếp từ kho lưu trữ GitHub sang [Render.com](https://render.com/). Build command tự động chạy `prisma generate` và `nest build`.
-3. **Web (Frontend):** Ứng dụng công nghệ Edge Network của [Vercel](https://vercel.com/), hỗ trợ pre-rendering tĩnh và API Routes nội bộ siêu nhanh.
-
----
-*Dự án tâm huyết được phát triển bởi **Parklang** .*
+*Dự án tâm huyết được phát triển bởi **HuyHoang** .*
