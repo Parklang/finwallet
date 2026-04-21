@@ -93,7 +93,7 @@ export default function AiAdvisorPage() {
               <div style={{
                 maxWidth: '70%', padding: '12px 18px', borderRadius: 'var(--radius-lg)',
                 background: msg.role === 'user' ? 'var(--color-primary)' : 'var(--color-bg-hover)',
-                color: 'white', fontSize: '0.95rem', lineHeight: 1.6,
+                color: msg.role === 'user' ? 'white' : 'var(--color-text)', fontSize: '0.95rem', lineHeight: 1.6,
                 borderBottomRightRadius: msg.role === 'user' ? 4 : undefined,
                 borderBottomLeftRadius: msg.role === 'assistant' ? 4 : undefined,
                 whiteSpace: 'pre-line'
