@@ -1,6 +1,9 @@
 # 💰 FinWallet (npj) — Smart Personal Finance Tracker
 
-> **Dự án đang trong quá trình phát triển (Development / Alpha Version)**. Mục tiêu là xây dựng một hệ thống quản lý tài chính cá nhân toàn diện, tích hợp AI để tối ưu hóa trải nghiệm người dùng.
+> **Dự án hoàn thiện v1.0 (Production Release)**. Một hệ thống quản lý tài chính cá nhân toàn diện, tích hợp trí tuệ nhân tạo (AI) để đưa ra lời khuyên và tối ưu hóa trải nghiệm người dùng.
+
+🚀 **Live Demo (Frontend)**: [https://finwallet-web.vercel.app](https://finwallet-web.vercel.app)  
+🔌 **Live API endpoint**: [https://finwallet-api.onrender.com/api/v1](https://finwallet-api.onrender.com/api/v1)
 
 ---
 
@@ -14,14 +17,14 @@ Dưới đây là chi tiết các lớp công nghệ đang được sử dụng 
 | **2. Backend** | NestJS 11 (Node.js framework), REST APIs | `[DONE]` |
 | **3. Architecture** | Monorepo (Turborepo), Modular Architecture, Pnpm Workspaces | `[DONE]` |
 | **4. Database** | PostgreSQL Core, Prisma ORM | `[DONE]` |
-| **5. Auth & Security** | JWT Authentication, Bcrypt password hashing, Audit Logs | `[WIP]` |
-| **6. Infrastructure** | Turborepo Pipeline, Local Deployment | `[DONE]` |
+| **5. Auth & Security** | JWT Authentication, Bcrypt password hashing, Audit Logs | `[DONE]` |
+| **6. Infrastructure** | Vercel (Web), Render (API), Turborepo Pipeline | `[DONE]` |
 | **7. DevOps** | Docker Compose, Swagger (API Docs), GitHub Actions | `[DONE]` |
-| **8. Integrations** | Gemini AI, Cloudinary Service, Nodemailer | `[WIP]` |
+| **8. Integrations** | Gemini AI, Cloudinary Service, Nodemailer | `[DONE]` |
 | **9. Core Modules** | Wallet, Transaction, Category, Budget, Goal, Bill Split | `[DONE]` |
 | **10. Analytics** | Recharts Visualization, Revenue/Expense Logic | `[DONE]` |
 | **11. Notifications** | Real-time WebSocket (Socket.io) | `[DONE]` |
-| **12. AI Features** | Gemini Advisor, OCR Receipt Parsing, QR Support | `[WIP]` |
+| **12. AI Features** | Gemini Advisor, OCR Receipt Parsing, QR Support | `[DONE]` |
 | **13. Testing** | Jest Unit/Integration Testing (Partial) | `[WIP]` |
 | **14. Performance** | Turborepo Local/Remote Caching | `[DONE]` |
 
