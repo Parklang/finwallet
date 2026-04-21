@@ -14,7 +14,6 @@ const config: CapacitorConfig = {
   appId: 'com.finwallet.app',
   appName: 'FinWallet',
   webDir: 'out', // Next.js static export output (dùng output: 'export')
-  bundledWebRuntime: false,
   server: {
     // Trong development, trỏ tới local Next.js
     // Xóa block này khi build production APK
